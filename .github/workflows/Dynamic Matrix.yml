@@ -1,39 +1,37 @@
-name: Dynamic Matrix Example
+name: Dynamic Service Matrix
 
-on:
-  push:
-    branches: [ main ]
+on: push
 
 jobs:
-  prepare:
+  detect-services:
     runs-on: ubuntu-latest
 
     outputs:
-      versions: ${{ steps.set-matrix.outputs.versions }}
-
-    steps:
-      - name: Generate Java Versions
-        id: set-matrix
-        run: |
-          echo 'versions=["17","21"]' >> $GITHUB_OUTPUT
-
-  test:
-    needs: prepare
-    runs-on: ubuntu-latest
-
-    strategy:
-      matrix:
-        java-version: ${{ fromJson(needs.prepare.outputs.versions) }}
+      services: ${{ steps.set.outputs.services }}
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Setup Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: ${{ matrix.java-version }}
+      - name: Detect Changed Services
+        id: set
+        run: |
+          echo 'services=["user-service","payment-service"]' >> $GITHUB_OUTPUT
 
-      - name: Run Tests
-        run: mvn test
+  test-services:
+    needs: detect-services
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        service: ${{ fromJson(needs.detect-services.outputs.services) }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Test Service
+        run: |
+          echo "Testing ${{ matrix.service }}"
+          cd services/${{ matrix.service }}
+          mvn test
