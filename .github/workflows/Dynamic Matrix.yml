@@ -1,0 +1,39 @@
+name: Dynamic Matrix Example
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+
+    outputs:
+      versions: ${{ steps.set-matrix.outputs.versions }}
+
+    steps:
+      - name: Generate Java Versions
+        id: set-matrix
+        run: |
+          echo 'versions=["17","21"]' >> $GITHUB_OUTPUT
+
+  test:
+    needs: prepare
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        java-version: ${{ fromJson(needs.prepare.outputs.versions) }}
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: ${{ matrix.java-version }}
+
+      - name: Run Tests
+        run: mvn test
