@@ -1,2 +1,10 @@
-# 47.Dynamic-Matrix-Workflows.md
-47.Dynamic Matrix Workflows.md
+# Dynamic Service Matrix
+
+This repository demonstrates a GitHub Actions dynamic matrix workflow.
+
+Services:
+
+- payment-service
+- user-service
+
+Each service is an independent Maven project.
